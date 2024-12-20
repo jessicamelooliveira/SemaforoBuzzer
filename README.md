@@ -1,9 +1,8 @@
 # Semáforo com sinal sonoro
 
 >:computer: Por: [Jéssica de Melo Oliveira](https://github.com/jessicamelooliveira)\
->:hourglass: Status: Em construção\
->:date: Última modificação: 19 de dezembro de 2024, 20:35
-
+>:hourglass: Status: Finalizado\
+>:date: Última modificação: 20 de dezembro de 2024, 12:21
 ## 1. Objetivo
 Este projeto tem como objetivo desenvolver um sistema de controle de sinais de trânsito para um cruzamento, incluindo:
 - Sinal sonoro indicando permissão para pedestres atravessarem.
@@ -23,12 +22,12 @@ Os componentes utilizados foram:
 A linguagem utilizada foi C.
 
 ## 4. Funcionamento do Sistema
-O sistema possui dois estados:
-### Estado inicial:
+O sistema possui dois modos:
+### Modo inicial:
 - Os LEDs para carros alternarão automaticamente (verde -> amarelo -> vermelho) seguindo uma lógica de tempo fixa (ex.: 8 segundos no verde, 2 no amarelo, 10 no vermelho).
 - O LED verde para pedestres estará desligado e o buzzer ficará inativo.
 
-### Estado de emergência:
+### Modo pedestre:
   - O led amarelo deve ficar acionado por 5 segundos e depois o vermelho deve ser acionado por 15 segundos, permitindo o tempo de fechamento seguro para os veículos.
   - A luz verde do pedestre deve ficar acesa pelo mesmo tempo em que a luz vermelha do semáforo estiver ativa (15 segundos).
 - Além disso, durante esse tempo, o buzzer deverá emitir um som intermitente, indicando que o sinal está aberto para o pedestre.
