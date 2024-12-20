@@ -24,24 +24,24 @@
 
 // FUNCAO PARA INICIAR O BUZZER
 void pwm_init_buzzer(unsigned int pino) {
-  gpio_set_function(pino, GPIO_FUNC_PWM);
+  gpio_set_function(pino, GPIO_FUNC_PWM); // configura o pino para usar PWM
 
-  unsigned int slice_num = pwm_gpio_to_slice_num(pino);
+  unsigned int slice_num = pwm_gpio_to_slice_num(pino); // obtem o numero da "slice" PWM associada ao pino
 
-  pwm_config config = pwm_get_default_config();
-  pwm_config_set_clkdiv(&config, clock_get_hz(clk_sys) / (BUZZER_FREQ * 4096));
-  pwm_init(slice_num, &config, true);
+  pwm_config config = pwm_get_default_config(); // cria uma configuracao padrao de PWM
+  pwm_config_set_clkdiv(&config, clock_get_hz(clk_sys) / (BUZZER_FREQ * 4096)); // divisor de clock
+  pwm_init(slice_num, &config, true); // inicializa o PWM com a configuracao ajustada
 
-  pwm_set_gpio_level(pino, 0);
+  pwm_set_gpio_level(pino, 0); // seta nivel inicial do PWM como desligado
 }
 
 // FUNCAO PARA O BEEP DO BUZZER
 void beep(unsigned int pino, unsigned int duracao) {
-  unsigned int slice_num = pwm_gpio_to_slice_num(pino);
+  unsigned int slice_num = pwm_gpio_to_slice_num(pino); // obtem o numero da "slice" PWM associada ao pino
 
-  pwm_set_gpio_level(pino, 1024);
-  sleep_ms(duracao);
-  pwm_set_gpio_level(pino, 0);
+  pwm_set_gpio_level(pino, 1024); // seta nivel do sinal PWM para 1024
+  sleep_ms(duracao); // duracao do beep
+  pwm_set_gpio_level(pino, 0); // seta nivel inicial do PWM como desligado 
   sleep_ms(100);
 }
 
@@ -72,80 +72,78 @@ int main() {
   pwm_init_buzzer(BUZZER);
 
   // VARIAVEIS DE CONTROLE
-  bool botao_pressionado = false;
-  absolute_time_t botao_pressionado_tempo = 0;
+  bool botao_pressionado = false; // indica se o botao foi pressionado
+  absolute_time_t botao_pressionado_tempo = 0; // tempo em que o botao foi pressionado
 
-  // Variáveis de controle de tempo
-  absolute_time_t tempo_inicial;
-  absolute_time_t tempo_atual;
-  int estado_semaforo = 0; // 0 = normal, 1 = emergência
+  // VARIAVEIS DE CONTROLE DE TEMPO
+  absolute_time_t tempo_inicial; // armazena o tempo inicial
+  absolute_time_t tempo_atual; // armazena o tempo final
+  int estado_semaforo = 0; // 0 = normal, 1 = pedestre
 
-  // Configura o tempo inicial
-  tempo_inicial = get_absolute_time();
+  tempo_inicial = get_absolute_time(); // configura o tempo inicial
 
   while (true) {
-    // Verifica o tempo atual
-    tempo_atual = get_absolute_time();
+    tempo_atual = get_absolute_time(); // verifica o tempo atual
 
-    // Verifica se o botão foi pressionado
+    // VERIFICACAO SE O BOTAO FOI PRESSIONADO
+    // se o botao esta com estado baixo e nao foi registrado que foi pressionado
     if (gpio_get(BOTAO) == 0 && !botao_pressionado) {
-      botao_pressionado = true;
-      botao_pressionado_tempo = tempo_atual;
-      printf("Botão pressionado. Semáforo em modo de emergência.\n");
+      botao_pressionado = true; // registra que o botao foi pressionado
+      botao_pressionado_tempo = tempo_atual; // armazena o tempo atual em que o botao foi pressionado
+      printf("Botão pressionado. Semáforo em modo pedestre.\n");
     }
 
     if (botao_pressionado) {
-      // Modo de emergência
+      // MODO PEDESTRE
+      // verifica se o tempo decorrido desde que o botão foi pressionado eh menor que o tempo definido para o amarelo (TEMPO_PED_AMAR)
       if (absolute_time_diff_us(botao_pressionado_tempo, tempo_atual) < TEMPO_PED_AMAR * 1000000) {
-        // Modo amarelo (5 segundos)
+        // amarelo (5 segundos)
         gpio_put(LED_VERD, 0);
         gpio_put(LED_AMAR, 1);
         gpio_put(LED_VERM, 0);
         gpio_put(LED_PED, 0);
       }
+      // verifica se o tempo decorrido desde que o botão foi pressionado eh menor que o tempo definido para o amarelo + vermelho (TEMPO_PED_AMAR + TEMPO_PED_VERM)
       else if (absolute_time_diff_us(botao_pressionado_tempo, tempo_atual) < (TEMPO_PED_AMAR + TEMPO_PED_VERM) * 1000000) {
-        // Modo vermelho (15 segundos)
+        // vermelho (15 segundos)
         gpio_put(LED_AMAR, 0);
         gpio_put(LED_VERM, 1);
-        gpio_put(LED_PED, 1);
-        beep(BUZZER, 100);  // Buzzer
+        gpio_put(LED_PED, 1); // semaforo do pedestre acionado
+        beep(BUZZER, 100);  // com buzzer
       }
       else {
-        // Após o vermelho, volta ao ciclo normal
-        botao_pressionado = false;
-        gpio_put(LED_PED, 0);
-        printf("Modo de emergência finalizado. Retornando ao ciclo normal.\n");
-        tempo_inicial = tempo_atual; // Reseta o tempo do semáforo
+        // apos o vermelho, volta ao modo normal
+        botao_pressionado = false; // reseta o indicativo do botao pressionado
+        gpio_put(LED_PED, 0); // desliga o semaforo do pedestre
+        printf("Modo pedestre finalizado. Retornando ao modo normal.\n");
+        tempo_inicial = tempo_atual; // Rrseta o tempo do semáforo
       }
     } else {
-      // Modo normal do semáforo
+      // MODO NORMAL DO SEMAFORO
       if (absolute_time_diff_us(tempo_inicial, tempo_atual) < TEMPO_VERD * 1000000) {
-        // Verde (8 segundos)
+        // verde (8 segundos)
         gpio_put(LED_VERD, 1);
         gpio_put(LED_AMAR, 0);
         gpio_put(LED_VERM, 0);
       }
       else if (absolute_time_diff_us(tempo_inicial, tempo_atual) < (TEMPO_VERD + TEMPO_AMAR) * 1000000) {
-        // Amarelo (2 segundos)
+        // amarelo (2 segundos)
         gpio_put(LED_VERD, 0);
         gpio_put(LED_AMAR, 1);
         gpio_put(LED_VERM, 0);
       }
       else if (absolute_time_diff_us(tempo_inicial, tempo_atual) < (TEMPO_VERD + TEMPO_AMAR + TEMPO_VERM) * 1000000) {
-        // Vermelho (10 segundos)
+        // vermelho (10 segundos)
         gpio_put(LED_VERD, 0);
         gpio_put(LED_AMAR, 0);
         gpio_put(LED_VERM, 1);
       }
       else {
-        // Reseta o ciclo
+        // reseta o ciclo
         tempo_inicial = tempo_atual;
       }
     }
-
-    // Delay não bloqueante
     sleep_ms(100);
   }
-
   return 0;
 }
