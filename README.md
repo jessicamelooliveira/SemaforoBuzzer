@@ -3,6 +3,7 @@
 >:computer: Por: [Jéssica de Melo Oliveira](https://github.com/jessicamelooliveira)\
 >:hourglass: Status: Finalizado\
 >:date: Última modificação: 20 de dezembro de 2024, 12:21
+
 ## 1. Objetivo
 Este projeto tem como objetivo desenvolver um sistema de controle de sinais de trânsito para um cruzamento, incluindo:
 - Sinal sonoro indicando permissão para pedestres atravessarem.
@@ -31,6 +32,9 @@ O sistema possui dois modos:
   - O led amarelo deve ficar acionado por 5 segundos e depois o vermelho deve ser acionado por 15 segundos, permitindo o tempo de fechamento seguro para os veículos.
   - A luz verde do pedestre deve ficar acesa pelo mesmo tempo em que a luz vermelha do semáforo estiver ativa (15 segundos).
 - Além disso, durante esse tempo, o buzzer deverá emitir um som intermitente, indicando que o sinal está aberto para o pedestre.
+
+## 5. Simulação
+Você pode acessar uma simulação do projeto através desse link: [https://wokwi.com/projects/417803015247022081](https://wokwi.com/projects/417803015247022081)
 
 ---
 ### License
